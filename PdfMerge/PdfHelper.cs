@@ -11,20 +11,25 @@ namespace PdfMerge
 {
     public static class PdfHelper
     {
-        public static byte[] MergePdfDocuments(string[] pdfFilePaths)
+        /// <summary>
+        /// Merges all files provided as a list of file paths.
+        /// </summary>
+        /// <param name="pdfFilePaths">List of file paths.</param>
+        /// <returns>Merged pdf file as byte array.</returns>
+        public static byte[] MergePdfDocuments(List<string> pdfFilePaths)
         {
             if (pdfFilePaths == null || pdfFilePaths.Any())
             {
                 throw new ArgumentException("File paths not provided");
             }
 
-            List<byte[]> mutiplePdfFileBytes = new List<byte[]>();
+            var mutiplePdfFileBytes = new List<byte[]>();
 
-            foreach (string pdfFilePath in pdfFilePaths)
+            foreach (var pdfFilePath in pdfFilePaths)
             {
                 if (File.Exists(pdfFilePath))
                 {
-                    byte[] fileBytes = File.ReadAllBytes(pdfFilePath);
+                    var fileBytes = File.ReadAllBytes(pdfFilePath);
 
                     if (fileBytes.Length > 0)
                     {
@@ -33,9 +38,14 @@ namespace PdfMerge
                 }
             }
 
-            return PdfHelper.MergePdfDocuments(mutiplePdfFileBytes);
+            return MergePdfDocuments(mutiplePdfFileBytes);
         }
 
+        /// <summary>
+        /// Merges all files provided as a list of byte arrays.
+        /// </summary>
+        /// <param name="mutiplePdfFileBytes">List of pdf filea as byte arrays.</param>
+        /// <returns>Merged pdf file as byte array.</returns>
         public static byte[] MergePdfDocuments(List<byte[]> mutiplePdfFileBytes)
         {
             if (mutiplePdfFileBytes == null || mutiplePdfFileBytes.Any())
@@ -43,11 +53,11 @@ namespace PdfMerge
                 throw new ArgumentException("File bytes not provided");
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
-                using (Document document = new Document())
+                using (var document = new Document())
                 {
-                    using (PdfCopy mergedPdf = new PdfCopy(document, ms))
+                    using (var mergedPdf = new PdfCopy(document, ms))
                     {
                         document.Open();
 
@@ -55,7 +65,7 @@ namespace PdfMerge
                         {
                             if (pdfFileBytes != null && pdfFileBytes.Length > 0)
                             {
-                                using (PdfReader pdfReader = new PdfReader(pdfFileBytes))
+                                using (var pdfReader = new PdfReader(pdfFileBytes))
                                 {
                                     mergedPdf.AddDocument(pdfReader);
                                 }
