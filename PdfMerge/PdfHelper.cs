@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 
@@ -12,33 +9,47 @@ namespace PdfMerge
     public static class PdfHelper
     {
         /// <summary>
+        /// Merges all pdf files and writes ouput to disk. If file already exists, it will be overwritten.
+        /// </summary>
+        /// <param name="pdfFilePaths">List of file paths.</param>
+        public static void MergePdfFilesAndWriteToDisk(string[] sourcePdfFilePaths, string outputFilePath)
+        {
+            var outputBytes = MergePdfFiles(sourcePdfFilePaths);
+
+            if(outputBytes != null && outputBytes.Any())
+            {
+                File.WriteAllBytes(outputFilePath, outputBytes);
+            }
+        }
+
+        /// <summary>
         /// Merges all files provided as a list of file paths.
         /// </summary>
         /// <param name="pdfFilePaths">List of file paths.</param>
         /// <returns>Merged pdf file as byte array.</returns>
-        public static byte[] MergePdfDocuments(List<string> pdfFilePaths)
+        public static byte[] MergePdfFiles(string[] sourcePdfFilePaths)
         {
-            if (pdfFilePaths == null || pdfFilePaths.Any())
-            {
-                throw new ArgumentException("File paths not provided");
-            }
-
             var mutiplePdfFileBytes = new List<byte[]>();
 
-            foreach (var pdfFilePath in pdfFilePaths)
+            foreach (var pdfFilePath in sourcePdfFilePaths)
             {
                 if (File.Exists(pdfFilePath))
                 {
                     var fileBytes = File.ReadAllBytes(pdfFilePath);
 
-                    if (fileBytes.Length > 0)
+                    if (fileBytes.Any())
                     {
                         mutiplePdfFileBytes.Add(fileBytes);
                     }
                 }
             }
 
-            return MergePdfDocuments(mutiplePdfFileBytes);
+            if (mutiplePdfFileBytes.Any())
+            {
+                return MergeAllPdfFileBytes(mutiplePdfFileBytes);
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -46,13 +57,8 @@ namespace PdfMerge
         /// </summary>
         /// <param name="mutiplePdfFileBytes">List of pdf filea as byte arrays.</param>
         /// <returns>Merged pdf file as byte array.</returns>
-        public static byte[] MergePdfDocuments(List<byte[]> mutiplePdfFileBytes)
+        private static byte[] MergeAllPdfFileBytes(IEnumerable<byte[]> mutiplePdfFileBytes)
         {
-            if (mutiplePdfFileBytes == null || mutiplePdfFileBytes.Any())
-            {
-                throw new ArgumentException("File bytes not provided");
-            }
-
             using (var ms = new MemoryStream())
             {
                 using (var document = new Document())
@@ -75,7 +81,6 @@ namespace PdfMerge
                 }
                 return ms.ToArray();
             }
-
         }
     }
 }
